@@ -429,14 +429,18 @@ describe("usage: count formatting", () => {
     expect(formatRequestCount(1_200_000_000, "de")).toBe("1,20 Mrd.");
     expect(formatRequestCount(1_500, "DE")).toBe("1,5 Tsd.");
     expect(formatRequestCount(1_500, "de-AT")).toBe("1,5 Tsd.");
-    // Non-de locales fall back to en rules.
-    expect(formatRequestCount(1_500, "fr")).toBe("1.5k");
   });
 
   test("de formatting uses comma decimals and German unit labels", () => {
     expect(formatRequestCount(1_500, "de")).toBe("1,5 Tsd.");
     expect(formatRequestCount(2_500_000, "de-DE")).toBe("2,5 Mio.");
     expect(formatRequestCount(3_000_000_000, "de")).toBe("3 Mrd.");
+  });
+
+  test("fr formatting uses comma decimals and French unit labels", () => {
+    expect(formatRequestCount(1_500, "fr")).toBe("1,5 k");
+    expect(formatRequestCount(2_500_000, "fr-FR")).toBe("2,5 M");
+    expect(formatRequestCount(3_000_000_000, "FR")).toBe("3 Md");
   });
 
   test("characterization: de keeps the untrimmed 1,20 Mrd. while en trims to 1.2B", () => {

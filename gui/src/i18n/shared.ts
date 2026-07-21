@@ -1,17 +1,19 @@
 import { createContext, useContext } from "react";
 import { en, type TKey } from "./en";
 import { de } from "./de";
+import { fr } from "./fr";
 import { ko } from "./ko";
 import { zh } from "./zh";
 
-export type Locale = "en" | "de" | "ko" | "zh";
+export type Locale = "en" | "de" | "fr" | "ko" | "zh";
 export type { TKey };
 
-export const DICTS: Record<Locale, Record<TKey, string>> = { en, de, ko, zh };
+export const DICTS: Record<Locale, Record<TKey, string>> = { en, de, fr, ko, zh };
 
 export const LOCALES: { code: Locale; name: string; htmlLang: string }[] = [
   { code: "en", name: "English", htmlLang: "en" },
   { code: "de", name: "Deutsch", htmlLang: "de" },
+  { code: "fr", name: "Français", htmlLang: "fr" },
   { code: "ko", name: "한국어", htmlLang: "ko" },
   { code: "zh", name: "中文", htmlLang: "zh-CN" },
 ];
@@ -21,10 +23,11 @@ const LANG_KEY = "ocx-lang";
 export function detectInitial(): Locale {
   try {
     const stored = localStorage.getItem(LANG_KEY);
-    if (stored === "en" || stored === "de" || stored === "ko" || stored === "zh") return stored;
+    if (stored === "en" || stored === "de" || stored === "fr" || stored === "ko" || stored === "zh") return stored;
   } catch { /* ignore */ }
   const nav = typeof navigator !== "undefined" ? navigator.language.toLowerCase() : "en";
   if (nav.startsWith("de")) return "de";
+  if (nav.startsWith("fr")) return "fr";
   if (nav.startsWith("ko")) return "ko";
   if (nav.startsWith("zh")) return "zh";
   return "en";

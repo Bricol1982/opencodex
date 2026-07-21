@@ -1,7 +1,7 @@
 export interface StatusCodeInfo { label: string; description: string }
 
-type Locale = "en" | "de" | "ko" | "zh";
-type LocalizedInfo = Record<Locale, StatusCodeInfo>;
+type Locale = "en" | "de" | "fr" | "ko" | "zh";
+type LocalizedInfo = Record<Exclude<Locale, "fr">, StatusCodeInfo>;
 
 const STATUS_CODES: Record<number, LocalizedInfo> = {
   400: {
@@ -108,6 +108,77 @@ const STATUS_CODES: Record<number, LocalizedInfo> = {
   },
 };
 
+const FRENCH_STATUS_CODES: Record<number, StatusCodeInfo> = {
+  400: {
+    label: "Requête incorrecte",
+    description: "Le proxy n’a pas pu comprendre la requête. Vérifiez le modèle, la structure des messages, les en-têtes et le corps JSON avant de réessayer.",
+  },
+  401: {
+    label: "Non autorisé",
+    description: "Les identifiants sont absents, expirés ou invalides. Reconnectez-vous ou actualisez les identifiants du compte ou du fournisseur utilisés par opencodex.",
+  },
+  402: {
+    label: "Paiement requis",
+    description: "Le fournisseur en amont a rejeté la requête, car la facturation, les crédits ou l’accès au forfait ne sont pas disponibles. Ajoutez des crédits, mettez à jour la facturation ou changez de fournisseur.",
+  },
+  403: {
+    label: "Accès interdit",
+    description: "Le compte est authentifié, mais n’est pas autorisé à utiliser ce modèle ou cette opération. Il s’agit souvent d’une restriction de forfait ou d’abonnement, d’une règle d’organisation ou d’une autorisation de modèle, et pas nécessairement d’une clé API incorrecte.",
+  },
+  404: {
+    label: "Introuvable",
+    description: "La route, le modèle, le compte ou la ressource en amont demandés sont introuvables. Vérifiez le nom du modèle et la configuration du fournisseur opencodex.",
+  },
+  408: {
+    label: "Délai de la requête dépassé",
+    description: "La requête a pris trop de temps avant que le proxy ou le fournisseur en amont puisse la terminer. Réessayez avec une requête plus petite ou un autre fournisseur.",
+  },
+  409: {
+    label: "Conflit",
+    description: "La requête entre en conflit avec l’état actuel du compte, de la session ou du fournisseur. Actualisez la session ou réessayez une fois l’opération en cours terminée.",
+  },
+  413: {
+    label: "Requête trop volumineuse",
+    description: "Le prompt, les pièces jointes ou la charge utile générée dépassent une limite du proxy ou du fournisseur en amont. Réduisez le nombre de tokens, la taille des fichiers ou l’historique de conversation.",
+  },
+  422: {
+    label: "Contenu invalide",
+    description: "Le fournisseur a accepté le format de la requête, mais a rejeté son contenu. Vérifiez les options du modèle, les définitions d’outils, les rôles des messages et les champs non pris en charge.",
+  },
+  424: {
+    label: "Échec d’une dépendance du fournisseur",
+    description: "Une dépendance en amont requise a échoué pendant qu’opencodex acheminait la requête. Réessayez plus tard ou utilisez un autre fournisseur configuré.",
+  },
+  429: {
+    label: "Limite de débit atteinte",
+    description: "La limite de débit ou de quota du fournisseur en amont a été atteinte. Attendez la réinitialisation de la fenêtre de quota ou changez de compte ou de fournisseur.",
+  },
+  499: {
+    label: "Requête fermée par le client",
+    description: "Le client s’est déconnecté ou a annulé la requête avant qu’opencodex termine son acheminement. Réessayez si l’annulation était involontaire.",
+  },
+  500: {
+    label: "Erreur du proxy",
+    description: "opencodex a rencontré une erreur interne pendant le traitement de la requête. Réessayez une fois, puis consultez les journaux du proxy si le problème se reproduit.",
+  },
+  502: {
+    label: "Réponse en amont incorrecte",
+    description: "Le fournisseur en amont a renvoyé une réponse invalide ou en échec via le proxy. Réessayez ou acheminez la requête vers un autre fournisseur.",
+  },
+  503: {
+    label: "Fournisseur indisponible",
+    description: "Le proxy ou le fournisseur en amont est temporairement indisponible ou surchargé. Patientez un instant, puis réessayez ou changez de fournisseur.",
+  },
+  504: {
+    label: "Délai du fournisseur dépassé",
+    description: "Le fournisseur en amont n’a pas répondu avant l’expiration du délai du proxy. Réessayez avec une requête plus petite ou choisissez un fournisseur plus rapide.",
+  },
+  529: {
+    label: "Fournisseur surchargé",
+    description: "Le fournisseur en amont est surchargé ou sa capacité est limitée. Attendez puis réessayez, ou changez de compte ou de fournisseur.",
+  },
+};
+
 const GENERIC_STATUS: { client: LocalizedInfo; server: LocalizedInfo } = {
   client: {
     en: { label: "Request error", description: "The proxy or upstream provider rejected the request. Check the request shape, credentials, model name, and provider configuration." },
@@ -123,13 +194,27 @@ const GENERIC_STATUS: { client: LocalizedInfo; server: LocalizedInfo } = {
   },
 };
 
+const FRENCH_GENERIC_STATUS: { client: StatusCodeInfo; server: StatusCodeInfo } = {
+  client: {
+    label: "Erreur de requête",
+    description: "Le proxy ou le fournisseur en amont a rejeté la requête. Vérifiez sa structure, les identifiants, le nom du modèle et la configuration du fournisseur.",
+  },
+  server: {
+    label: "Erreur du serveur ou du fournisseur",
+    description: "opencodex ou un fournisseur en amont a échoué pendant le traitement de la requête. Réessayez plus tard ou acheminez-la vers un autre fournisseur.",
+  },
+};
+
 function normalizeLocale(locale: string): Locale {
-  return locale === "de" || locale === "ko" || locale === "zh" ? locale : "en";
+  return locale === "de" || locale === "fr" || locale === "ko" || locale === "zh" ? locale : "en";
 }
 
 export function statusCodeInfo(code: number, locale: string): StatusCodeInfo | null {
   if (code < 400) return null;
   const normalizedLocale = normalizeLocale(locale);
+  if (normalizedLocale === "fr") {
+    return FRENCH_STATUS_CODES[Math.trunc(code)] ?? (code < 500 ? FRENCH_GENERIC_STATUS.client : FRENCH_GENERIC_STATUS.server);
+  }
   const info = STATUS_CODES[Math.trunc(code)] ?? (code < 500 ? GENERIC_STATUS.client : GENERIC_STATUS.server);
   return info[normalizedLocale];
 }
